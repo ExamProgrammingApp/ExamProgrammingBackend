@@ -3,8 +3,8 @@ import { Role } from '../../enums/user.enum';
 
 @Entity('users')
 export class User {
-    @PrimaryGeneratedColumn()
-    userId!: number;
+    @PrimaryGeneratedColumn('uuid')
+    userId!: string;
 
     @Column({ nullable: false })
     name!: string;
