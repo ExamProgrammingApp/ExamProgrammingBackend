@@ -17,9 +17,8 @@ export class UserController {
 
     @Get(':id')
     @ApiOperation({ summary: 'Get user by id' })
-    @ApiResponse({ status: 200 })
     @ApiParam({ name: 'id', description: 'Id of the user' })
-    async findOne(@Param() id: string): Promise<User> {
+    async findOne(@Param('id') id: string): Promise<User> {
         return await this.userService.findOne(id);
     }
 
@@ -39,7 +38,6 @@ export class UserController {
     }
 
     @ApiOperation({ summary: 'Delete a user' })
-    @ApiBody({ type: CreateUserDto })
     @Delete(':id')
     async remove(@Param('id') id: string): Promise<void> {
         await this.userService.remove(id);
