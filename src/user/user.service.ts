@@ -4,12 +4,17 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entity/user.entity';
 import * as bcrypt from 'bcrypt';
+import { Teacher } from '../teacher/entity/teacher.entity';
+import { Role } from '../enums/user.enum';
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectRepository(User)
         private userRepository: Repository<User>,
+
+        @InjectRepository(Teacher)
+        private readonly teacherRepository: Repository<Teacher>,
     ) { }
 
     async findAll(): Promise<User[]> {
@@ -30,7 +35,20 @@ export class UserService {
 
     async create(user: CreateUserDto): Promise<User> {
         const hashedPassword = await bcrypt.hash(user.password, 10);
-        return this.userRepository.save({ ...user, password: hashedPassword });
+        const newUser = this.userRepository.create({ ...user, password: hashedPassword });
+
+        const savedUser = await this.userRepository.save(newUser);
+
+        if (user.role === Role.TEACHER) {
+            const teacherData = {
+                name: user.name,
+                user: savedUser
+            };
+            const teacher = this.teacherRepository.create(teacherData);
+            await this.teacherRepository.save(teacher);
+        }
+
+        return savedUser
     }
 
     async update(id: string, updateUserDto: CreateUserDto): Promise<User> {
