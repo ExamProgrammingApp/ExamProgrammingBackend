@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entity/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Teacher } from '../teacher/entity/teacher.entity';
 
 @Module({
     imports: [
@@ -16,7 +17,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
                 password: configService.get<string>('DATABASE_PASSWORD'),
                 database: configService.get<string>('DATABASE_NAME'),
                 synchronize: true,
-                entities: [User],
+                entities: [User, Teacher],
                 // migrations: ["src/migrations/*.ts"],
             }),
         }),
