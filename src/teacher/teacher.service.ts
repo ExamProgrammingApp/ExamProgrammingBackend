@@ -1,14 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Teacher } from './entity/teacher.entity';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
+import { Status } from '../enums/exam.enum';
+import { Exam } from '../exam/entity/exam.entity';
 
 @Injectable()
 export class TeacherService {
     constructor(
         @InjectRepository(Teacher)
         private readonly teacherRepository: Repository<Teacher>,
+
+        @InjectRepository(Exam)
+        private examRepository: Repository<Exam>,
     ) { }
 
     async findAll(): Promise<Teacher[]> {
@@ -43,5 +48,25 @@ export class TeacherService {
             throw new NotFoundException(`Teacher with subject ${subject} not found`);
         }
         return teacher;
+    }
+
+    async updateRoomForExam(examId: string, room: string): Promise<Exam> {
+        const exam = await this.examRepository.findOne({
+            where: { examId },
+            relations: ['teacher'],
+        });
+
+        if (!exam) {
+            throw new NotFoundException(`Exam with ID ${examId} not found`);
+        }
+
+        // if (exam.teacher.teacherId !== teacherId) {
+        //     throw new ForbiddenException('You are not authorized to update this exam');
+        // }
+
+        exam.room = room;
+        exam.status = Status.APPROVED;
+
+        return this.examRepository.save(exam);
     }
 }

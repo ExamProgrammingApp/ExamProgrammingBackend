@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Category } from "../../enums/teacher.enum";
 import { User } from "../../user/entity/user.entity";
+import { Exam } from "../../exam/entity/exam.entity";
 
 @Entity('teachers')
 export class Teacher {
@@ -25,4 +26,7 @@ export class Teacher {
     })
     @JoinColumn({ name: 'userId' })
     user!: User;
+
+    @OneToMany(() => Exam, (exam) => exam.teacher)
+    exams!: Exam[];
 }
