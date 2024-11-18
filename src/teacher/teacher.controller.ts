@@ -2,7 +2,9 @@ import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/commo
 import { TeacherService } from './teacher.service';
 import { Teacher } from './entity/teacher.entity';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
-import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Exam } from '../exam/entity/exam.entity';
+import { UpdateRoomDto } from '../exam/dto/update-room.dto';
 
 @ApiTags('teachers')
 @Controller('teachers')
@@ -49,5 +51,21 @@ export class TeacherController {
     @ApiParam({ name: 'subject', type: 'string', description: 'Subject of the teacher' })
     async findTeacherBySubject(@Param('subject') subject: string) {
         return this.teacherService.findOneBySubject(subject);
+    }
+
+
+    @Patch(':examId/room')
+    @ApiOperation({ summary: 'Set room for an exam' })
+    @ApiParam({ name: 'examId', description: 'ID of the exam' })
+    @ApiBody({
+        type: UpdateRoomDto,
+        description: 'The room and exam status to update',
+    })
+    async updateRoom(
+        @Param('examId') examId: string,
+        @Body() updateRoomDto: UpdateRoomDto,
+
+    ): Promise<Exam> {
+        return this.teacherService.updateRoomForExam(examId, updateRoomDto.room);
     }
 }

@@ -1,10 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Status } from '../../enums/exam.enum';
+import { Teacher } from '../../teacher/entity/teacher.entity';
 
 @Entity('exams')
 export class Exam {
-  @PrimaryGeneratedColumn()
-  examId!: number;
+  @PrimaryGeneratedColumn('uuid')
+  examId!: string;
 
   @Column({ type: 'date' })
   date!: Date;
@@ -12,11 +13,12 @@ export class Exam {
   @Column({ nullable: false })
   duration!: string;
 
-  @Column({ nullable: false })
+  @Column({ nullable: true })
   room!: string;
 
-  @Column({ nullable: false })
-  teacher!: string;
+  @ManyToOne(() => Teacher, (teacher) => teacher.exams, { nullable: false })
+  @JoinColumn({ name: 'teacherId' })
+  teacher!: Teacher;
 
   @Column({ nullable: false })
   subject!: string;
@@ -24,7 +26,6 @@ export class Exam {
   @Column({
     type: 'enum',
     enum: Status,
-    default: Status.PENDING,
   })
   status!: Status;
 
