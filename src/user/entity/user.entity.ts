@@ -1,10 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
 import { Role } from '../../enums/user.enum';
+import { Teacher } from '../../teacher/entity/teacher.entity';
 
 @Entity('users')
 export class User {
-    @PrimaryGeneratedColumn()
-    userId!: number;
+    @PrimaryGeneratedColumn('uuid')
+    userId!: string;
 
     @Column({ nullable: false })
     name!: string;
@@ -21,4 +22,7 @@ export class User {
         default: Role.STUDENT,
     })
     role!: string;
+
+    @OneToOne(() => Teacher, (teacher) => teacher.user)
+    teacher!: Teacher;
 }

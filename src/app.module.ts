@@ -5,9 +5,12 @@ import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { UserModule } from './user/user.module';
 import { StudentModule } from './student/student.module';
+import { TeacherModule } from './teacher/teacher.module';
+import { ExamModule } from './exam/exam.module';
+import { RoomModule } from './room/room.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(), DatabaseModule, UserModule, StudentModule],
+  imports: [ConfigModule.forRoot(), DatabaseModule, UserModule, StudentModule, TeacherModule, ExamModule, RoomModule],
   controllers: [AppController],
   providers: [AppService],
 })

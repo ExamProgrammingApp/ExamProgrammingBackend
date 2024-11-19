@@ -1,21 +1,28 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from '../user/entity/user.entity';
 import { Student } from '../student/entity/student.entity';
+import { Teacher } from '../teacher/entity/teacher.entity';
+import { Exam } from '../exam/entity/exam.entity';
+import { Room } from '../room/entity/room.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forRoot({
-            type: 'postgres',
-            host: 'localhost',
-            port: 5432,
-            username: 'postgres',
-            password: 'postgres',
-            database: 'postgres',
-            synchronize: true,
-            entities: [User, Student],
-            // migrations: ["src/migrations/*.ts"],
-
+        TypeOrmModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => ({
+                type: 'postgres',
+                host: configService.get<string>('DATABASE_HOST'),
+                port: configService.get<number>('DATABASE_PORT'),
+                username: configService.get<string>('DATABASE_USER'),
+                password: configService.get<string>('DATABASE_PASSWORD'),
+                database: configService.get<string>('DATABASE_NAME'),
+                synchronize: true,
+                entities: [User, Student, Teacher, Exam, Room],
+                // migrations: ["src/migrations/*.ts"],
+            }),
         }),
     ],
     exports: [TypeOrmModule],
