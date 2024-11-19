@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../user/entity/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { User } from '../user/entity/user.entity';
+import { Student } from '../student/entity/student.entity';
 import { Teacher } from '../teacher/entity/teacher.entity';
 import { Exam } from '../exam/entity/exam.entity';
 import { Room } from '../room/entity/room.entity';
@@ -19,7 +20,7 @@ import { Room } from '../room/entity/room.entity';
                 password: configService.get<string>('DATABASE_PASSWORD'),
                 database: configService.get<string>('DATABASE_NAME'),
                 synchronize: true,
-                entities: [User, Teacher, Exam, Room],
+                entities: [User, Student, Teacher, Exam, Room],
                 // migrations: ["src/migrations/*.ts"],
             }),
         }),
