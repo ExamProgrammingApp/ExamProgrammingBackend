@@ -1,10 +1,12 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Teacher } from './entity/teacher.entity';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
 import { Status } from '../enums/exam.enum';
 import { Exam } from '../exam/entity/exam.entity';
+import { Room } from '../room/entity/room.entity';
+import { RoomStatus } from '../enums/room.enum';
 
 @Injectable()
 export class TeacherService {
@@ -14,6 +16,9 @@ export class TeacherService {
 
         @InjectRepository(Exam)
         private examRepository: Repository<Exam>,
+
+        @InjectRepository(Room)
+        private roomRepository: Repository<Room>,
     ) { }
 
     async findAll(): Promise<Teacher[]> {
@@ -50,22 +55,39 @@ export class TeacherService {
         return teacher;
     }
 
-    async updateRoomForExam(examId: string, room: string): Promise<Exam> {
+    async updateRoomForExam(examId: string, roomIds: string[]): Promise<Exam> {
         const exam = await this.examRepository.findOne({
             where: { examId },
-            relations: ['teacher'],
+            relations: ['teacher', 'rooms'],
         });
 
         if (!exam) {
             throw new NotFoundException(`Exam with ID ${examId} not found`);
         }
 
-        // if (exam.teacher.teacherId !== teacherId) {
-        //     throw new ForbiddenException('You are not authorized to update this exam');
-        // }
 
-        exam.room = room;
-        exam.status = Status.APPROVED;
+        const rooms = await this.roomRepository.findByIds(roomIds);
+
+        const occupiedRooms = rooms.filter(room => room.status === RoomStatus.BOOKED);
+
+        if (occupiedRooms.length > 0) {
+            const occupiedRoomNames = occupiedRooms.map(room => room.name).join(', ');
+            throw new ConflictException(`Rooms ${occupiedRoomNames} are already occupied and cannot be selected.`);
+        }
+
+        if (rooms.length === 0) {
+            throw new NotFoundException(`Rooms with IDs ${roomIds.join(', ')} not found`);
+        }
+
+
+        exam.rooms = rooms;
+        exam.status = Status.APPROVED
+
+        for (const room of rooms) {
+            room.status = RoomStatus.BOOKED;
+            await this.roomRepository.save(room);
+        }
+
 
         return this.examRepository.save(exam);
     }

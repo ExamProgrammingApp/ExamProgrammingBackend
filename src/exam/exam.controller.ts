@@ -28,11 +28,10 @@ export class ExamController {
     return this.examService.findOne(id);
   }
 
-  @Get('status/:id')
-  @ApiOperation({ summary: 'Get exam by status' })
-  @ApiParam({ name: 'id', type: 'string', description: 'Id of the exam' })
-  async findOneByStatus(@Param('id') id: string): Promise<Exam> {
-    return this.examService.findOne(id);
+  @Get('status/rejected')
+  @ApiOperation({ summary: 'Get exam by status rejected' })
+  async findOneByStatus(): Promise<Exam[]> {
+    return this.examService.findAllByStatusPending();
   }
 
   @Delete(':id')

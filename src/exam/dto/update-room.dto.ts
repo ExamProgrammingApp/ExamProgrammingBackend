@@ -1,11 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString } from "class-validator";
+import { ArrayNotEmpty, IsArray, IsString, IsUUID } from "class-validator";
 
 export class UpdateRoomDto {
     @ApiProperty({
-        example: 'Room 101',
-        description: 'The room where the exam will be held',
+        example: ['room-uuid-1', 'room-uuid-2'],
+        description: 'An array of room IDs to assign to the exam',
     })
-    @IsString()
-    room!: string;
+    @IsArray()
+    @ArrayNotEmpty()
+    @IsUUID('4', { each: true })
+    roomIds!: string[];
 }
