@@ -4,6 +4,7 @@ import { User } from '../user/entity/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Teacher } from '../teacher/entity/teacher.entity';
 import { Exam } from '../exam/entity/exam.entity';
+import { Room } from '../room/entity/room.entity';
 
 @Module({
     imports: [
@@ -18,7 +19,7 @@ import { Exam } from '../exam/entity/exam.entity';
                 password: configService.get<string>('DATABASE_PASSWORD'),
                 database: configService.get<string>('DATABASE_NAME'),
                 synchronize: true,
-                entities: [User, Teacher, Exam],
+                entities: [User, Teacher, Exam, Room],
                 // migrations: ["src/migrations/*.ts"],
             }),
         }),
