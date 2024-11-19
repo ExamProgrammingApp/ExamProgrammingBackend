@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, ManyToMany, JoinTable } from 'typeorm';
 import { Status } from '../../enums/exam.enum';
 import { Teacher } from '../../teacher/entity/teacher.entity';
+import { Room } from '../../room/entity/room.entity';
 
 @Entity('exams')
 export class Exam {
@@ -13,8 +14,9 @@ export class Exam {
   @Column({ nullable: false })
   duration!: string;
 
-  @Column({ nullable: true })
-  room!: string;
+  @ManyToMany(() => Room, (room) => room.exams, { nullable: true })
+  @JoinTable()
+  rooms!: Room[];
 
   @ManyToOne(() => Teacher, (teacher) => teacher.exams, { nullable: false })
   @JoinColumn({ name: 'teacherId' })

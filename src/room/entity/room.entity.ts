@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
 import { RoomStatus } from "../../enums/room.enum";
+import { Exam } from "../../exam/entity/exam.entity";
 
 @Entity('rooms')
 export class Room {
@@ -21,4 +22,7 @@ export class Room {
         default: RoomStatus.AVAILABLE,
     })
     status!: RoomStatus;
+
+    @ManyToMany(() => Exam, (exam) => exam.rooms)
+    exams!: Exam[];
 }

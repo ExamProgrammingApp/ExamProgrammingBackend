@@ -46,19 +46,18 @@ export class ExamService {
         return exam;
     }
 
-    async findOneByStatus(examId: string): Promise<Exam> {
-        const exam = await this.examRepository.findOne({
+    async findAllByStatusPending(): Promise<Exam[]> {
+        const exams = await this.examRepository.find({
             where: { status: Status.REJECTED },
             relations: ['teacher'],
         });
 
-        if (!exam) {
-            throw new NotFoundException(`Exam with ID ${examId} not found`);
+        if (exams.length === 0) {
+            throw new NotFoundException('No exams with REJECTED status found');
         }
 
-        return exam;
+        return exams;
     }
-
     async findOneByGroupOrSubject(group?: string, subject?: string): Promise<Exam[]> {
 
         const query = this.examRepository.createQueryBuilder('exam')

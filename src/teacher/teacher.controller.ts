@@ -66,6 +66,6 @@ export class TeacherController {
         @Body() updateRoomDto: UpdateRoomDto,
 
     ): Promise<Exam> {
-        return this.teacherService.updateRoomForExam(examId, updateRoomDto.room);
+        return this.teacherService.updateRoomForExam(examId, updateRoomDto.roomIds);
     }
 }
