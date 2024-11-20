@@ -1,18 +1,24 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Request, SetMetadata } from '@nestjs/common';
 import { TeacherService } from './teacher.service';
 import { Teacher } from './entity/teacher.entity';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
-import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Exam } from '../exam/entity/exam.entity';
 import { UpdateRoomDto } from '../exam/dto/update-room.dto';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('teachers')
+@ApiBearerAuth()
 @Controller('teachers')
+// @UseGuards(AuthGuard('jwt'), RolesGuard)
 export class TeacherController {
     constructor(private readonly teacherService: TeacherService) { }
 
 
     @Get()
+    // @SetMetadata('roles', ['teacher'])
     @ApiOperation({ summary: 'Get all teachers' })
     async findAll(): Promise<Teacher[]> {
         return this.teacherService.findAll();

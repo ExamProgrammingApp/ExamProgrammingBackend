@@ -19,6 +19,5 @@ export class CreateStudentDto {
     @IsString()
     CNP!: string;
 
-    @ApiProperty({ example: 1, description: 'The ID of the associated user' })
-    userId!: number;
+    ;
 }
