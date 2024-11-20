@@ -6,6 +6,7 @@ import { User } from './entity/user.entity';
 import * as bcrypt from 'bcrypt';
 import { Teacher } from '../teacher/entity/teacher.entity';
 import { Role } from '../enums/user.enum';
+import { Student } from '../student/entity/student.entity';
 
 @Injectable()
 export class UserService {
@@ -15,6 +16,9 @@ export class UserService {
 
         @InjectRepository(Teacher)
         private readonly teacherRepository: Repository<Teacher>,
+
+        @InjectRepository(Student)
+        private readonly studentRepository: Repository<Student>,
     ) { }
 
     async findAll(): Promise<User[]> {
@@ -46,6 +50,15 @@ export class UserService {
             };
             const teacher = this.teacherRepository.create(teacherData);
             await this.teacherRepository.save(teacher);
+        }
+
+        if (user.role === Role.STUDENT) {
+            const studentData = {
+                name: user.name,
+                user: savedUser
+            };
+            const student = this.studentRepository.create(studentData);
+            await this.studentRepository.save(student);
         }
 
         return savedUser

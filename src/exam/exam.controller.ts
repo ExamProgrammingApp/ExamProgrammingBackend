@@ -1,10 +1,11 @@
 import { Controller, Get, Post, Body, Query, NotFoundException, Param, Delete } from '@nestjs/common';
 import { ExamService } from './exam.service';
-import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { Exam } from './entity/exam.entity';
 
 @Controller('exams')
+@ApiBearerAuth()
 export class ExamController {
   constructor(private readonly examService: ExamService) { }
 

@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
+import { User } from '../../user/entity/user.entity';
 
 @Entity('students')
 export class Student {
@@ -8,15 +9,18 @@ export class Student {
     @Column({ nullable: false })
     name!: string;
 
-    @Column({ nullable: false })
+    @Column({ nullable: true })
     group!: string;
 
-    @Column({ type: 'int', nullable: false })
+    @Column({ type: 'int', nullable: true })
     year!: number;
 
-    @Column({ unique: true, nullable: false })
+    @Column({ unique: true, nullable: true })
     CNP!: string;
 
-    @Column({ nullable: false })
-    userId!: number;
+    @OneToOne(() => User, (user) => user.student, {
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn({ name: 'userId' })
+    user!: User;
 }

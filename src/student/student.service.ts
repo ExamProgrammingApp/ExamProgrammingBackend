@@ -11,13 +11,13 @@ export class StudentService {
     constructor(
         @InjectRepository(Student)
         private readonly studentRepository: Repository<Student>,
-    ) {}
+    ) { }
 
     async findAll(): Promise<Student[]> {
         return await this.studentRepository.find();
     }
     async findOne(id: string): Promise<Student> {
-        const existStudent = await this.studentRepository.findOne({ where: { studentId: id }, select: ['studentId', 'name', 'group', 'year', 'CNP', 'userId'], });
+        const existStudent = await this.studentRepository.findOne({ where: { studentId: id } });
         if (!existStudent) {
             throw new NotFoundException('Category not found');
         }
@@ -41,5 +41,5 @@ export class StudentService {
             throw new NotFoundException('Student not found');
         }
     }
-    
+
 }
