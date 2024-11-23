@@ -1,10 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { Exam } from './entity/exam.entity';
 import { Teacher } from '../teacher/entity/teacher.entity';
 import { Status } from '../enums/exam.enum';
+import { Token } from '../auth/token.decorator';
+import { Role } from '../enums/user.enum';
+import { Student } from '../student/entity/student.entity';
 
 @Injectable()
 export class ExamService {
@@ -14,10 +17,21 @@ export class ExamService {
 
         @InjectRepository(Teacher)
         private teacherRepository: Repository<Teacher>,
+
+        @InjectRepository(Student)
+        private studentRepository: Repository<Student>,
     ) { }
 
 
-    async create(createExamDto: CreateExamDto): Promise<Exam> {
+    async create(createExamDto: CreateExamDto, @Token() token: any): Promise<Exam> {
+        if (token.role !== Role.STUDENT) {
+            throw new UnauthorizedException('Only students can create exams');
+        }
+
+        const student = await this.studentRepository.findOne({
+            where: { user: { userId: token.id } },
+        });
+
         const teacher = await this.teacherRepository.findOne({
             where: { teacherId: createExamDto.teacherId },
         });
@@ -26,7 +40,11 @@ export class ExamService {
             throw new Error(`Teacher with ID ${createExamDto.teacherId} not found`);
         }
 
-        const exam = this.examRepository.create({ ...createExamDto, status: Status.PENDING, teacher });
+        if (!student) {
+            throw new Error(`Student not found`);
+        }
+
+        const exam = this.examRepository.create({ ...createExamDto, status: Status.PENDING, teacher, student });
 
         return await this.examRepository.save(exam);
     }
