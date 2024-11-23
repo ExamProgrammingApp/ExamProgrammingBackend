@@ -3,6 +3,7 @@ import { ExamService } from './exam.service';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { Exam } from './entity/exam.entity';
+import { Token } from '../auth/token.decorator';
 
 @Controller('exams')
 @ApiBearerAuth()
@@ -17,8 +18,8 @@ export class ExamController {
     description: 'Exam successfully created',
     type: Exam,
   })
-  async create(@Body() createExamDto: CreateExamDto): Promise<Exam> {
-    return await this.examService.create(createExamDto);
+  async create(@Body() createExamDto: CreateExamDto, @Token() token: any): Promise<Exam> {
+    return await this.examService.create(createExamDto, token);
   }
 
 

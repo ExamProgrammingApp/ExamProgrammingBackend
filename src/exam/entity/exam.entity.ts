@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, ManyToMa
 import { Status } from '../../enums/exam.enum';
 import { Teacher } from '../../teacher/entity/teacher.entity';
 import { Room } from '../../room/entity/room.entity';
+import { Student } from '../../student/entity/student.entity';
 
 @Entity('exams')
 export class Exam {
@@ -14,13 +15,17 @@ export class Exam {
   @Column({ nullable: false })
   duration!: string;
 
-  @ManyToMany(() => Room, (room) => room.exams, { nullable: true })
+  @ManyToMany(() => Room, (room) => room.exams, { nullable: false })
   @JoinTable()
   rooms!: Room[];
 
   @ManyToOne(() => Teacher, (teacher) => teacher.exams, { nullable: false })
   @JoinColumn({ name: 'teacherId' })
   teacher!: Teacher;
+
+  @ManyToOne(() => Student, (student) => student.exams, { nullable: true })
+  @JoinColumn({ name: 'studentId' })
+  student!: Student;
 
   @Column({ nullable: false })
   subject!: string;

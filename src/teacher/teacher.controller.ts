@@ -8,17 +8,16 @@ import { UpdateRoomDto } from '../exam/dto/update-room.dto';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
+import { Token } from '../auth/token.decorator';
 
 @ApiTags('teachers')
 @ApiBearerAuth()
 @Controller('teachers')
-// @UseGuards(AuthGuard('jwt'), RolesGuard)
 export class TeacherController {
     constructor(private readonly teacherService: TeacherService) { }
 
 
     @Get()
-    // @SetMetadata('roles', ['teacher'])
     @ApiOperation({ summary: 'Get all teachers' })
     async findAll(): Promise<Teacher[]> {
         return this.teacherService.findAll();
@@ -39,16 +38,17 @@ export class TeacherController {
     async update(
         @Param('id') id: string,
         @Body() updateTeacherDto: UpdateTeacherDto,
+        @Token() token: any
     ): Promise<Teacher> {
-        return this.teacherService.update(id, updateTeacherDto);
+        return this.teacherService.update(id, updateTeacherDto, token);
     }
 
 
     @Delete(':id')
     @ApiOperation({ summary: 'Delete a teacher by Id' })
     @ApiParam({ name: 'id', type: 'string', description: 'Id of the teacher' })
-    async delete(@Param('id') id: string): Promise<void> {
-        return this.teacherService.delete(id);
+    async delete(@Param('id') id: string, @Token() token: any): Promise<void> {
+        return this.teacherService.delete(id, token);
     }
 
 
@@ -70,8 +70,8 @@ export class TeacherController {
     async updateRoom(
         @Param('examId') examId: string,
         @Body() updateRoomDto: UpdateRoomDto,
-
+        @Token() token: any
     ): Promise<Exam> {
-        return this.teacherService.updateRoomForExam(examId, updateRoomDto.roomIds);
+        return this.teacherService.updateRoomForExam(examId, updateRoomDto.roomIds, token);
     }
 }

@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from '../../user/entity/user.entity';
+import { Exam } from '../../exam/entity/exam.entity';
 
 @Entity('students')
 export class Student {
@@ -23,4 +24,7 @@ export class Student {
     })
     @JoinColumn({ name: 'userId' })
     user!: User;
+
+    @OneToMany(() => Exam, (exam) => exam.student)
+    exams!: Exam[];
 }
