@@ -15,6 +15,12 @@ export class Exam {
   @Column({ nullable: false })
   duration!: string;
 
+  @Column({ type: 'int' })
+  numberOfStudents!: number;
+
+  @Column({ type: 'time' })
+  startTime!: string;
+
   @ManyToMany(() => Room, (room) => room.exams, { nullable: false })
   @JoinTable()
   rooms!: Room[];
