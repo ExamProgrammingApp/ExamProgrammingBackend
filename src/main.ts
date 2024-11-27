@@ -11,7 +11,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   app.enableCors({
-    origin: process.env.REACT_APP_BACKEND_URL,
+    origin: process.env.REACT_APP_FRONTEND_URL,
     credentials: true,
   });
 
