@@ -8,6 +8,7 @@ import { Status } from '../enums/exam.enum';
 import { Token } from '../auth/token.decorator';
 import { Role } from '../enums/user.enum';
 import { Student } from '../student/entity/student.entity';
+import { UpdateExamDto } from './dto/update-exam.dto';
 
 @Injectable()
 export class ExamService {
@@ -34,8 +35,6 @@ export class ExamService {
         const student = await this.studentRepository.findOne({
             where: { user: { userId: token.id } },
         });
-        console.log('Token:', token);
-        console.log('Student found:', student);
 
         const teacher = await this.teacherRepository.findOne({
             where: { teacherId: createExamDto.teacherId },
@@ -109,6 +108,42 @@ export class ExamService {
         if (result.affected === 0) {
             throw new NotFoundException(`Exam with ID ${id} not found`);
         }
+    }
+
+    async updateExam(
+        examId: string,
+        updateExamDto: UpdateExamDto,
+        @Token() token: any
+    ): Promise<Exam> {
+        const exam = await this.examRepository.findOne({
+            where: { examId },
+            relations: ['student'],
+        });
+
+        if (!exam) {
+            throw new NotFoundException(`Exam with ID ${examId} not found`);
+        }
+
+        const student = await this.studentRepository.findOne({
+            where: { user: { userId: token.id } },
+        });
+
+        if (exam.student.studentId !== student?.studentId) {
+            throw new UnauthorizedException(
+                'You are not authorized to update this exam'
+            );
+        }
+
+        if (updateExamDto.date) {
+            exam.date = updateExamDto.date;
+        }
+        if (updateExamDto.startTime) {
+            exam.startTime = updateExamDto.startTime;
+        }
+
+        exam.status = Status.PENDING
+
+        return await this.examRepository.save(exam);
     }
 }
 
