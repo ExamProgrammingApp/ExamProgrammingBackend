@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Query, NotFoundException, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, NotFoundException, Param, Delete, Patch } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { Exam } from './entity/exam.entity';
 import { Token } from '../auth/token.decorator';
+import { UpdateExamDto } from './dto/update-exam.dto';
 
 @Controller('exams')
 @ApiBearerAuth()
@@ -41,6 +42,17 @@ export class ExamController {
   @ApiParam({ name: 'id', type: 'string', description: 'Id of the exam' })
   async delete(@Param('id') id: string): Promise<void> {
     await this.examService.delete(id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update exam by Id' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Id of the exam' })
+  async updateExam(
+    @Param('id') id: string,
+    @Body() updateExamDto: UpdateExamDto,
+    @Token() token: any
+  ): Promise<Exam> {
+    return await this.examService.updateExam(id, updateExamDto, token);
   }
 
 
