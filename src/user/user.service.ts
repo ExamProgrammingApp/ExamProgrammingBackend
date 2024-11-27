@@ -60,6 +60,14 @@ export class UserService {
             const student = this.studentRepository.create(studentData);
             await this.studentRepository.save(student);
         }
+        if (user.role === Role.HEADSTUDENT) {
+            const headStudentData = {
+                name: user.name,
+                user: savedUser
+            };
+            const student = this.studentRepository.create(headStudentData);
+            await this.studentRepository.save(student);
+        }
 
         return savedUser
     }

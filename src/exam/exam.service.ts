@@ -24,13 +24,18 @@ export class ExamService {
 
 
     async create(createExamDto: CreateExamDto, @Token() token: any): Promise<Exam> {
-        if (token.role !== Role.STUDENT) {
+        console.log('Token:', token);
+        if (token.role !== Role.HEADSTUDENT) {
+            console.error('Unauthorized: Only students can create exams');
             throw new UnauthorizedException('Only students can create exams');
         }
+
 
         const student = await this.studentRepository.findOne({
             where: { user: { userId: token.id } },
         });
+        console.log('Token:', token);
+        console.log('Student found:', student);
 
         const teacher = await this.teacherRepository.findOne({
             where: { teacherId: createExamDto.teacherId },
@@ -45,6 +50,7 @@ export class ExamService {
         }
 
         const exam = this.examRepository.create({ ...createExamDto, status: Status.PENDING, teacher, student });
+        console.log('Exam data before saving:', exam);
 
         return await this.examRepository.save(exam);
     }
