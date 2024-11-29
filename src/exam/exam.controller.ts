@@ -71,4 +71,12 @@ export class ExamController {
 
     return this.examService.findOneByGroupOrSubject(group, subject);
   }
+
+  @Get('teacher/teacherId')
+  @ApiOperation({ summary: '' })
+  async findExamByTeacher(@Token() token:any){
+    const exams = await this.examService.findExamByTeacherId(token);
+    return exams;
+  }
+  
 }
