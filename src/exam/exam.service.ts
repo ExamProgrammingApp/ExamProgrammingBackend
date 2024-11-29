@@ -145,6 +145,15 @@ export class ExamService {
 
         return await this.examRepository.save(exam);
     }
+
+    async findExamByTeacherId(@Token() token:any):Promise<Exam[]>{
+        console.log("Extracted teacherId from token:", token.id);
+        const exams = await this.examRepository.find({
+            where: { teacher: { teacherId: token.teacherId } },
+        });
+        return exams;
+        
+    }
 }
 
 
