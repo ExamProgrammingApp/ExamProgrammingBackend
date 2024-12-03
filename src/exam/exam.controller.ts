@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, NotFoundException, Param, Delete, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, NotFoundException, Param, Delete, Patch, BadRequestException } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CreateExamDto } from './dto/create-exam.dto';
@@ -11,6 +11,7 @@ import { UpdateExamDto } from './dto/update-exam.dto';
 export class ExamController {
   constructor(private readonly examService: ExamService) { }
 
+  
   @Post()
   @ApiOperation({ summary: 'Create a new exam' })
   @ApiBody({ type: CreateExamDto })
@@ -21,6 +22,43 @@ export class ExamController {
   })
   async create(@Body() createExamDto: CreateExamDto, @Token() token: any): Promise<Exam> {
     return await this.examService.create(createExamDto, token);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get exams for the authenticated user' })
+  async findExamsForUser(
+    @Token() token: any
+  ): Promise<Exam[]> {
+    console.log('Token primit în controller:', token);
+
+    if (!token || !token.id || !token.role) {
+      throw new BadRequestException('Token-ul nu conține un userId sau un role valid.');
+    }
+    return this.examService.findExamsForUser(token.id, token.role);
+  }
+
+
+  @Get('date/:date')
+  @ApiOperation({ summary: 'Get exams by date for the authenticated user' })
+  @ApiParam({
+    name: 'date',
+    type: 'string',
+    description: 'The exam date in format YYYY-MM-DD',
+    example: '2024-11-28',
+  })
+  async findExamsByDateForUser(
+    @Param('date') date: string,
+    @Token() token: any
+  ): Promise<Exam[]> {
+    console.log('Token primit în controller:', token);
+    if (!token || !token.id || !token.role) {
+      throw new BadRequestException('Token-ul nu conține un userId sau un role valid.');
+    }
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      throw new BadRequestException('Data furnizată nu este validă.');
+    }
+    return this.examService.findExamsByDateForUser(token.id, token.role, parsedDate);
   }
 
 
@@ -56,7 +94,7 @@ export class ExamController {
   }
 
 
-  @Get()
+  /*@Get()
   @ApiOperation({ summary: 'Get exams by group or subject' })
   @ApiQuery({
     name: 'group',
@@ -82,7 +120,7 @@ export class ExamController {
     }
 
     return this.examService.findOneByGroupOrSubject(group, subject);
-  }
+  }*/
 
   @Get('teacher/teacherId')
   @ApiOperation({ summary: '' })
@@ -90,5 +128,4 @@ export class ExamController {
     const exams = await this.examService.findExamByTeacherId(token);
     return exams;
   }
-  
 }
