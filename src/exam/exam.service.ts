@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { Exam } from './entity/exam.entity';
 import { Teacher } from '../teacher/entity/teacher.entity';
+import { User } from '../user/entity/user.entity';
 import { Status } from '../enums/exam.enum';
 import { Token } from '../auth/token.decorator';
 import { Role } from '../enums/user.enum';
@@ -53,6 +54,7 @@ export class ExamService {
 
         return await this.examRepository.save(exam);
     }
+    
 
 
 
@@ -79,6 +81,87 @@ export class ExamService {
             throw new NotFoundException('No exams with REJECTED status found');
         }
 
+        return exams;
+    }
+        async findExamsForUser(userId: string, role: string): Promise<Exam[]> {
+            let exams: Exam[];
+            if (role === 'teacher') {
+                const teacher = await this.teacherRepository.findOne({
+                    where: { user: { userId } },
+                    relations: ['user'],
+                });
+                if (!teacher) {
+                    throw new NotFoundException('Teacher not found');
+                }
+                exams = await this.examRepository.find({
+                    where: {
+                        teacher: { teacherId: teacher.teacherId },
+                    },
+                    relations: ['teacher'],
+                });
+            } else if (role === 'student' || role === 'headstudent') {
+                const student = await this.studentRepository.findOne({
+                    where: { user: { userId } },
+                    relations: ['user'],
+                });
+                if (!student) {
+                    throw new NotFoundException('Student not found');
+                }
+                exams = await this.examRepository.find({
+                    where: {
+                        group: student.group,
+                    },
+                    relations: ['student'],
+                });
+            } else {
+                throw new BadRequestException('Invalid role');
+            }
+            if (exams.length === 0) {
+                throw new NotFoundException('No exams found for the given date and user');
+            }
+            return exams;
+        }
+
+    async findExamsByDateForUser(userId: string, role: string, date: Date): Promise<Exam[]> {
+        const formattedDate = date.toISOString().split('T')[0];
+        let exams: Exam[];
+        if (role === 'teacher') {
+            const teacher = await this.teacherRepository.findOne({
+                where: { user: { userId } },
+                relations: ['user'],
+            });
+            if (!teacher) {
+                throw new NotFoundException('Teacher not found');
+            }
+            exams = await this.examRepository.find({
+                where: {
+                    teacher: { teacherId: teacher.teacherId },
+                    date: Raw((dateField) => `DATE(${dateField}) = '${formattedDate}'`),
+                },
+                relations: ['teacher'],
+            });
+            console.log('Exam details with teacher relation:', exams);
+        } else if (role === 'student' || role === 'headstudent') {
+            const student = await this.studentRepository.findOne({
+                where: { user: { userId } },
+                relations: ['user'],
+            });
+            if (!student) {
+                throw new NotFoundException('Student not found');
+            }
+            exams = await this.examRepository.find({
+                where: {
+                    date: Raw((dateField) => `DATE(${dateField}) = '${formattedDate}'`),
+                    group: student.group,
+                },
+                relations: ['student', 'teacher'],
+            });
+        } else {
+            throw new BadRequestException('Invalid role');
+        }
+        if (exams.length === 0) {
+            throw new NotFoundException('No exams found for the given date and user');
+        }
         return exams;
     }
     async findOneByGroupOrSubject(group?: string, subject?: string): Promise<Exam[]> {
