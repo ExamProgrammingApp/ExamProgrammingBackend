@@ -187,6 +187,33 @@ export class ExamService {
 
         return exams;
     }
+    async rejectExam(examId: string, token: any): Promise<any> {
+        // Căutăm examenul în baza de date pe baza examId
+        const exam = await this.examRepository.findOne({
+          where: { examId },
+          relations: ['teacher'], // Aici presupunem că examenul are o relație cu un profesor
+        });
+    
+        if (!exam) {
+          throw new NotFoundException(`Exam with ID ${examId} not found`);
+        }
+    
+        // Verificăm dacă profesorul este același cu cel care a trimis cererea
+        const teacher = await this.teacherRepository.findOne({
+          where: { user: { userId: token.id } },
+        });
+    
+        if (exam.teacher.teacherId !== teacher?.teacherId) {
+          throw new UnauthorizedException('You are not authorized to update this exam');
+        }
+    
+        // Modificăm statusul examenului
+        exam.status = Status.REJECTED;
+    
+        // Salvăm modificările
+        await this.examRepository.save(exam);
+        return { message: 'Exam rejected successfully' };
+      }
 
     async delete(id: string): Promise<void> {
         const result = await this.examRepository.delete(id);
@@ -246,7 +273,8 @@ export class ExamService {
         // Căutăm examenele aprobate ale profesorului
         exams = await this.examRepository.find({
             where: {
-                teacher: { teacherId: teacher.teacherId }, // Căutăm examenele asociate teacherId
+                teacher: { teacherId: teacher.teacherId },
+                status: Status.PENDING, // Căutăm examenele asociate teacherId
             },
             relations: ['teacher'],
         });

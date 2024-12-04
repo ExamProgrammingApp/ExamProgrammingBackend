@@ -93,6 +93,16 @@ export class ExamController {
     return await this.examService.updateExam(id, updateExamDto, token);
   }
 
+  @Patch(':id/reject')
+  @ApiOperation({ summary: 'Reject an exam by ID (for teachers)' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Id of the exam to reject' })
+  async rejectExam(
+    @Param('id') id: string,   // Preluăm examId din URL
+    @Token() token: any        // Preluăm token-ul din request
+  ): Promise<any> {
+    return await this.examService.rejectExam(id, token);
+  }
+
 
   /*@Get()
   @ApiOperation({ summary: 'Get exams by group or subject' })
