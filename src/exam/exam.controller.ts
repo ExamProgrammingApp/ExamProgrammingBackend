@@ -25,7 +25,7 @@ export class ExamController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get exams for the authenticated user' })
+  @ApiOperation({ summary: 'Get approved exams for the authenticated user' })
   async findExamsForUser(
     @Token() token: any
   ): Promise<Exam[]> {
@@ -39,7 +39,7 @@ export class ExamController {
 
 
   @Get('date/:date')
-  @ApiOperation({ summary: 'Get exams by date for the authenticated user' })
+  @ApiOperation({ summary: 'Get approved exams by date for the authenticated user' })
   @ApiParam({
     name: 'date',
     type: 'string',
@@ -93,6 +93,16 @@ export class ExamController {
     return await this.examService.updateExam(id, updateExamDto, token);
   }
 
+  @Patch(':id/reject')
+  @ApiOperation({ summary: 'Reject an exam by ID (for teachers)' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Id of the exam to reject' })
+  async rejectExam(
+    @Param('id') id: string,   // Preluăm examId din URL
+    @Token() token: any        // Preluăm token-ul din request
+  ): Promise<any> {
+    return await this.examService.rejectExam(id, token);
+  }
+
 
   /*@Get()
   @ApiOperation({ summary: 'Get exams by group or subject' })
@@ -124,8 +134,10 @@ export class ExamController {
 
   @Get('teacher/teacherId')
   @ApiOperation({ summary: '' })
-  async findExamByTeacher(@Token() token: any) {
-    const exams = await this.examService.findExamByTeacherId(token);
-    return exams;
+  async findExamByTeacher(@Token() token: any): Promise<Exam[]> {
+    if (!token || !token.id) {
+      throw new BadRequestException('Token-ul nu conține un userId sau un role valid.');
+    }
+    return this.examService.findExamByTeacherId(token.id);
   }
 }
