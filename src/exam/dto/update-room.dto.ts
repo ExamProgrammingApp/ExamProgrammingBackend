@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { ArrayNotEmpty, IsArray, IsString, IsUUID } from "class-validator";
+import { Column } from "typeorm";
 
 export class UpdateRoomDto {
     @ApiProperty({
@@ -10,4 +11,8 @@ export class UpdateRoomDto {
     @ArrayNotEmpty()
     @IsUUID('4', { each: true })
     roomIds!: string[];
+
+    @ApiProperty()
+    @IsUUID()
+    teacherAssistent!: string;
 }

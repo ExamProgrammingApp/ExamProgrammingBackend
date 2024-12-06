@@ -54,7 +54,7 @@ export class ExamService {
 
         return await this.examRepository.save(exam);
     }
-    
+
 
 
 
@@ -71,56 +71,59 @@ export class ExamService {
         return exam;
     }
 
-    async findAllByStatusPending(): Promise<Exam[]> {
+    async findAllByStatusPending(@Token() token: any): Promise<Exam[]> {
         const exams = await this.examRepository.find({
-            where: { status: Status.REJECTED },
+            where: {
+                status: Status.REJECTED,
+                student: { user: { userId: token.id } },
+            },
             relations: ['teacher'],
         });
 
         if (exams.length === 0) {
-            throw new NotFoundException('No exams with REJECTED status found');
+            throw new NotFoundException('No pending exams found for the logged-in student');
         }
 
         return exams;
     }
-        async findExamsForUser(userId: string, role: string): Promise<Exam[]> {
-            let exams: Exam[];
-            if (role === 'teacher') {
-                const teacher = await this.teacherRepository.findOne({
-                    where: { user: { userId } },
-                    relations: ['user'],
-                });
-                if (!teacher) {
-                    throw new NotFoundException('Teacher not found');
-                }
-                exams = await this.examRepository.find({
-                    where: {
-                        teacher: { teacherId: teacher.teacherId },
-                    },
-                    relations: ['teacher'],
-                });
-            } else if (role === 'student' || role === 'headstudent') {
-                const student = await this.studentRepository.findOne({
-                    where: { user: { userId } },
-                    relations: ['user'],
-                });
-                if (!student) {
-                    throw new NotFoundException('Student not found');
-                }
-                exams = await this.examRepository.find({
-                    where: {
-                        group: student.group,
-                    },
-                    relations: ['student'],
-                });
-            } else {
-                throw new BadRequestException('Invalid role');
+    async findExamsForUser(userId: string, role: string): Promise<Exam[]> {
+        let exams: Exam[];
+        if (role === 'teacher') {
+            const teacher = await this.teacherRepository.findOne({
+                where: { user: { userId } },
+                relations: ['user'],
+            });
+            if (!teacher) {
+                throw new NotFoundException('Teacher not found');
             }
-            if (exams.length === 0) {
-                throw new NotFoundException('No exams found for the given date and user');
+            exams = await this.examRepository.find({
+                where: {
+                    teacher: { teacherId: teacher.teacherId },
+                },
+                relations: ['teacher'],
+            });
+        } else if (role === 'student' || role === 'headstudent') {
+            const student = await this.studentRepository.findOne({
+                where: { user: { userId } },
+                relations: ['user'],
+            });
+            if (!student) {
+                throw new NotFoundException('Student not found');
             }
-            return exams;
+            exams = await this.examRepository.find({
+                where: {
+                    group: student.group,
+                },
+                relations: ['student'],
+            });
+        } else {
+            throw new BadRequestException('Invalid role');
         }
+        if (exams.length === 0) {
+            throw new NotFoundException('No exams found for the given date and user');
+        }
+        return exams;
+    }
 
     async findExamsByDateForUser(userId: string, role: string, date: Date): Promise<Exam[]> {
         const formattedDate = date.toISOString().split('T')[0];
@@ -137,8 +140,9 @@ export class ExamService {
                 where: {
                     teacher: { teacherId: teacher.teacherId },
                     date: Raw((dateField) => `DATE(${dateField}) = '${formattedDate}'`),
+                    status: Status.APPROVED
                 },
-                relations: ['teacher'],
+                relations: ['teacher', 'rooms'],
             });
             console.log('Exam details with teacher relation:', exams);
         } else if (role === 'student' || role === 'headstudent') {
@@ -153,8 +157,9 @@ export class ExamService {
                 where: {
                     date: Raw((dateField) => `DATE(${dateField}) = '${formattedDate}'`),
                     group: student.group,
+                    status: Status.APPROVED
                 },
-                relations: ['student', 'teacher'],
+                relations: ['student', 'teacher', 'rooms'],
             });
         } else {
             throw new BadRequestException('Invalid role');
@@ -229,13 +234,13 @@ export class ExamService {
         return await this.examRepository.save(exam);
     }
 
-    async findExamByTeacherId(@Token() token:any):Promise<Exam[]>{
+    async findExamByTeacherId(@Token() token: any): Promise<Exam[]> {
         console.log("Extracted teacherId from token:", token.id);
         const exams = await this.examRepository.find({
             where: { teacher: { teacherId: token.teacherId } },
         });
         return exams;
-        
+
     }
 }
 
