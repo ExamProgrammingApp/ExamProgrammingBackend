@@ -18,12 +18,12 @@ export class StudentController {
     async findAll(): Promise<Student[]> {
         return await this.studentService.findAll();
     }
-    @Get(':id')
+    @Get('tokenId')
     @ApiOperation({ summary: 'Get student by id' })
     @ApiResponse({ status: 200 })
-    @ApiParam({ name: 'id', description: 'Id of the student' })
-    async findOne(@Param('id') id: string): Promise<Student> {
-        return await this.studentService.findOne(id);
+    async findOne(@Token() token: any): Promise<Student> {
+
+        return await this.studentService.findOne(token.id);
     }
 
     @Post()

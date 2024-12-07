@@ -75,7 +75,7 @@ export class TeacherService {
         return teacher;
     }
 
-    async updateRoomForExam(examId: string, roomIds: string[], @Token() token: any): Promise<Exam> {
+    async updateRoomForExam(examId: string, roomIds: string[], @Token() token: any, teacherAssistentId: string): Promise<Exam> {
         if (token.role !== Role.TEACHER) {
             throw new UnauthorizedException('Only teachers can update exam rooms');
         }
@@ -91,6 +91,10 @@ export class TeacherService {
 
         const rooms = await this.roomRepository.findByIds(roomIds);
 
+        const teacherAssistant: any = await this.teacherRepository.findOne({
+            where: { teacherId: teacherAssistentId },
+        });
+
         const occupiedRooms = rooms.filter(room => room.status === RoomStatus.BOOKED);
 
         if (occupiedRooms.length > 0) {
@@ -105,6 +109,7 @@ export class TeacherService {
 
         exam.rooms = rooms;
         exam.status = Status.APPROVED
+        exam.teacherAssistent = teacherAssistant.teacherId;
 
         for (const room of rooms) {
             room.status = RoomStatus.BOOKED;

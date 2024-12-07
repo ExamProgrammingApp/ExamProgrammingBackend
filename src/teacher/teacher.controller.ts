@@ -72,6 +72,6 @@ export class TeacherController {
         @Body() updateRoomDto: UpdateRoomDto,
         @Token() token: any
     ): Promise<Exam> {
-        return this.teacherService.updateRoomForExam(examId, updateRoomDto.roomIds, token);
+        return this.teacherService.updateRoomForExam(examId, updateRoomDto.roomIds, token, updateRoomDto.teacherAssistent);
     }
 }

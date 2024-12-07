@@ -18,7 +18,7 @@ export class StudentService {
         return await this.studentRepository.find();
     }
     async findOne(id: string): Promise<Student> {
-        const existStudent = await this.studentRepository.findOne({ where: { studentId: id } });
+        const existStudent = await this.studentRepository.findOne({ where: { user: { userId: id } } });
         if (!existStudent) {
             throw new NotFoundException('Student not found');
         }

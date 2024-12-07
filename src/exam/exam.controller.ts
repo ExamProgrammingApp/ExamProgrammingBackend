@@ -11,7 +11,7 @@ import { UpdateExamDto } from './dto/update-exam.dto';
 export class ExamController {
   constructor(private readonly examService: ExamService) { }
 
-  
+
   @Post()
   @ApiOperation({ summary: 'Create a new exam' })
   @ApiBody({ type: CreateExamDto })
@@ -71,8 +71,8 @@ export class ExamController {
 
   @Get('status/rejected')
   @ApiOperation({ summary: 'Get exam by status rejected' })
-  async findOneByStatus(): Promise<Exam[]> {
-    return this.examService.findAllByStatusPending();
+  async findAllPendingExams(@Token() token: any): Promise<Exam[]> {
+    return await this.examService.findAllByStatusPending(token);
   }
 
   @Delete(':id')
@@ -132,12 +132,12 @@ export class ExamController {
     return this.examService.findOneByGroupOrSubject(group, subject);
   }*/
 
-    @Get('teacher/teacherId')
-    @ApiOperation({ summary: '' })
-    async findExamByTeacher(@Token() token:any): Promise<Exam[]> {
-      if (!token || !token.id) {
-        throw new BadRequestException('Token-ul nu conține un userId sau un role valid.');
-      }
-      return this.examService.findExamByTeacherId(token.id);
+  @Get('teacher/teacherId')
+  @ApiOperation({ summary: '' })
+  async findExamByTeacher(@Token() token: any): Promise<Exam[]> {
+    if (!token || !token.id) {
+      throw new BadRequestException('Token-ul nu conține un userId sau un role valid.');
     }
+    return this.examService.findExamByTeacherId(token.id);
+  }
 }

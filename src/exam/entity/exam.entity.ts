@@ -44,4 +44,7 @@ export class Exam {
 
   @Column({ nullable: false })
   group!: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  teacherAssistent!: string | null;
 }
