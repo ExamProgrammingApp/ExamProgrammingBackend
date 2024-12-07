@@ -22,6 +22,7 @@ export class StudentController {
     @ApiOperation({ summary: 'Get student by id' })
     @ApiResponse({ status: 200 })
     async findOne(@Token() token: any): Promise<Student> {
+
         return await this.studentService.findOne(token.id);
     }
 
