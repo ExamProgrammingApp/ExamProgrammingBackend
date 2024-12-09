@@ -4,7 +4,7 @@ import { seedUsers } from './user/seed/user.seed';
 import { seedTeachers } from './teacher/seed/teacher.seed'; 
 import { seedStudents } from './student/seed/student.seed';
 import { seedRooms } from './room/seed/room.seed'; 
-import { seedExams } from './exam/seed/exam.seed';
+//import { seedExams } from './exam/seed/exam.seed';
 
 const runSeed = async () => {
     console.log(AppDataSource.options.entities);
@@ -24,8 +24,8 @@ const runSeed = async () => {
         await seedRooms(dataSource);
         console.log('Rooms seeded successfully.');
 
-        await seedExams(dataSource);
-        console.log('Exams seeded successfully.');
+        //await seedExams(dataSource);
+        //console.log('Exams seeded successfully.');
 
         console.log('All seeding completed successfully.');
     } catch (error) {

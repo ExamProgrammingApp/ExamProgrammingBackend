@@ -7,34 +7,42 @@ export const seedTeachers = async (dataSource: DataSource) => {
     const teacherRepository = dataSource.getRepository(Teacher);
     const userRepository = dataSource.getRepository(User);
 
-   
-    const teacherUsers = await userRepository.findBy({ role: 'teacher' });
+    // Array of names and their associated subjects and categories
+    const names = [
+        { baseName: 'Vasile Bordei', subject: 'Computer Science', category: Category.FIESC },
+        { baseName: 'Monica Stefanuca', subject: 'Mathematics', category: Category.FIESC },
+        { baseName: 'Robert Pamparau', subject: 'Physics', category: Category.MECATRONICA },
+        { baseName: 'Serban Andries', subject: 'Chemistry', category: Category.MEDICINA },
+    ];
 
+    for (const { baseName, subject, category } of names) {
+        for (let i = 1; i <= 30; i++) {
+            const email = `${baseName.toLowerCase().replace(/ /g, '.')}.teacher${i}@example.com`;
 
-    const teacherDetails: { [key: string]: { subject: string; category: Category } } = {
-        'vasile.teacher@example.com': { subject: 'Computer Science', category: Category.FIESC },
-        'monica.teacher@example.com': { subject: 'Mathematics', category: Category.FIESC },
-        'robert.teacher@example.com': { subject: 'Physics', category: Category.MECATRONICA },
-        'serban.teacher@example.com': { subject: 'Chemistry', category: Category.MEDICINA },
-    };
+            
+            const user = await userRepository.findOneBy({ email });
 
-    for (const user of teacherUsers) {
-        
-        const existingTeacher = await teacherRepository.findOneBy({ user: { email: user.email } });
+            if (!user) {
+                
+                console.log(`User not found for email: ${email}`);
+                continue;
+            }
 
-        if (!existingTeacher) {
-            const details = teacherDetails[user.email];
+            
+            const existingTeacher = await teacherRepository.findOneBy({ user: { email } });
 
-            const newTeacher = teacherRepository.create({
-                name: user.name,
-                subject: details.subject,
-                category: details.category,
-                user: user, 
-            });
+            if (!existingTeacher) {
+                const newTeacher = teacherRepository.create({
+                    name: user.name,
+                    subject,
+                    category,
+                    user, 
+                });
 
-            await teacherRepository.save(newTeacher);
-        } else {
-            console.log(`Teacher for user ${user.email} already exists.`);
+                await teacherRepository.save(newTeacher);
+            } else {
+                console.log(`Teacher for user ${email} already exists.`);
+            }
         }
     }
 
