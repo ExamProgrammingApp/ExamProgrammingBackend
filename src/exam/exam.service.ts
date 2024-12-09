@@ -55,6 +55,18 @@ export class ExamService {
         return await this.examRepository.save(exam);
     }
 
+    async findAll(): Promise<Exam[]> {
+        return this.examRepository.find({
+            where: { status: Status.APPROVED },
+            relations: ['teacher', 'rooms'],  // Load the teacher relation
+            select: {
+                teacher: {
+                    name: true,  // Select only the teacher's name
+                },
+            },
+        });
+    }
+
 
 
 

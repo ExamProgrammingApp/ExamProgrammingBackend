@@ -11,6 +11,16 @@ import { UpdateExamDto } from './dto/update-exam.dto';
 export class ExamController {
   constructor(private readonly examService: ExamService) { }
 
+  @Get('public')
+  @ApiOperation({ summary: 'Get all exams (no authentication required)' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of all exams',
+    type: [Exam],
+  })
+  async findAllExams(): Promise<Exam[]> {
+    return this.examService.findAll(); // This assumes you have a method to get all exams
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create a new exam' })
