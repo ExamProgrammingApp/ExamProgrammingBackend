@@ -20,7 +20,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "migration:generate": "npm typeorm migration:generate -n MigrationName",
     "migration:run": "npm typeorm migration:run",
-    "seed:rooms": "ts-node src/seed.ts"
+    "seed:rooms": "ts-node src/seed.ts",
+    "seed:entities": "ts-node src/seed.ts",
+    "reset-db": "ts-node ./src/database/reset-db.ts"
   },
   "dependencies": {
     "4": "^0.0.0",
