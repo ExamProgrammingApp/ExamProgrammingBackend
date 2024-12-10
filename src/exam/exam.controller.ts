@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Query, NotFoundException, Param, Delete, Patch, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, NotFoundException, Param, Delete, Patch, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { Exam } from './entity/exam.entity';
 import { Token } from '../auth/token.decorator';
 import { UpdateExamDto } from './dto/update-exam.dto';
+import { Role } from '../enums/user.enum';
 
 @Controller('exams')
 @ApiBearerAuth()
@@ -149,5 +150,23 @@ export class ExamController {
       throw new BadRequestException('Token-ul nu conține un userId sau un role valid.');
     }
     return this.examService.findExamByTeacherId(token.id);
+  }
+
+
+  @ApiOperation({ summary: 'Return all approved exam for teacher' })
+  @ApiParam({ name: 'id', type: 'string' })
+  @Get('student/:id')
+  async getExamsByTeacher(
+    @Param('id') id: string,
+    @Token() token: any,
+  ) {
+
+    if (token.role !== Role.HEADSTUDENT) {
+      throw new UnauthorizedException(
+        'Nu aveți permisiunea de a accesa această resursă.',
+      );
+    }
+
+    return this.examService.findExamByTeacherIdForStudent(id);
   }
 }

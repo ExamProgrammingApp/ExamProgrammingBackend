@@ -55,6 +55,7 @@ export class ExamService {
         return await this.examRepository.save(exam);
     }
 
+
     async findAll(): Promise<Exam[]> {
         return this.examRepository.find({
             where: { status: Status.APPROVED },
@@ -66,8 +67,6 @@ export class ExamService {
             },
         });
     }
-
-
 
 
     async findOne(examId: string): Promise<Exam> {
@@ -82,6 +81,7 @@ export class ExamService {
 
         return exam;
     }
+
 
     async findAllByStatusPending(@Token() token: any): Promise<Exam[]> {
         const exams = await this.examRepository.find({
@@ -98,6 +98,8 @@ export class ExamService {
 
         return exams;
     }
+
+
     async findExamsForUser(userId: string, role: string): Promise<Exam[]> {
         let exams: Exam[];
         if (role === 'teacher') {
@@ -140,6 +142,7 @@ export class ExamService {
         return exams;
 
     }
+
 
     async findExamsByDateForUser(userId: string, role: string, date: Date): Promise<Exam[]> {
         const formattedDate = date.toISOString().split('T')[0];
@@ -185,6 +188,8 @@ export class ExamService {
         }
         return exams;
     }
+
+
     async findOneByGroupOrSubject(group?: string, subject?: string): Promise<Exam[]> {
 
         const query = this.examRepository.createQueryBuilder('exam')
@@ -206,6 +211,8 @@ export class ExamService {
 
         return exams;
     }
+
+
     async rejectExam(examId: string, token: any): Promise<any> {
         // Căutăm examenul în baza de date pe baza examId
         const exam = await this.examRepository.findOne({
@@ -226,13 +233,12 @@ export class ExamService {
             throw new UnauthorizedException('You are not authorized to update this exam');
         }
 
-        // Modificăm statusul examenului
         exam.status = Status.REJECTED;
 
-        // Salvăm modificările
         await this.examRepository.save(exam);
         return { message: 'Exam rejected successfully' };
     }
+
 
     async delete(id: string): Promise<void> {
         const result = await this.examRepository.delete(id);
@@ -240,6 +246,7 @@ export class ExamService {
             throw new NotFoundException(`Exam with ID ${id} not found`);
         }
     }
+
 
     async updateExam(
         examId: string,
@@ -277,11 +284,12 @@ export class ExamService {
         return await this.examRepository.save(exam);
     }
 
+
     async findExamByTeacherId(userId: string): Promise<Exam[]> {
         let exams: Exam[];
 
         const teacher = await this.teacherRepository.findOne({
-            where: { user: { userId } }, // Căutăm profesorul după teacherId din token
+            where: { user: { userId } },
             relations: ['user'],
         });
 
@@ -289,7 +297,6 @@ export class ExamService {
             throw new NotFoundException('Profesorul nu a fost găsit');
         }
 
-        // Căutăm examenele aprobate ale profesorului
         exams = await this.examRepository.find({
             where: {
                 teacher: { teacherId: teacher.teacherId },
@@ -298,9 +305,24 @@ export class ExamService {
             relations: ['teacher'],
         });
 
-        // Dacă nu sunt examene găsite, returnăm o eroare
         if (exams.length === 0) {
             throw new NotFoundException('Nu au fost găsite examene aprobate pentru acest profesor');
+        }
+
+        return exams;
+    }
+
+    async findExamByTeacherIdForStudent(teacherId: string): Promise<Exam[]> {
+        const exams = await this.examRepository.find({
+            where: {
+                teacher: { teacherId },
+                status: Status.APPROVED, // Sau statusul dorit
+            },
+            relations: ['teacher', 'student', 'rooms'],
+        });
+
+        if (exams.length === 0) {
+            throw new NotFoundException('Nu au fost găsite examene pentru acest profesor');
         }
 
         return exams;
