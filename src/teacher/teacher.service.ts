@@ -123,15 +123,17 @@ export class TeacherService {
             throw new NotFoundException(`Student or student's email not found for exam ID ${examId}`);
         }
 
-        await sendExamApprovalEmail(
-            student.user.name,
-            student.user.email,
-            exam.subject,
-            exam.date,
-            exam.startTime,
-            rooms.map(room => room.name)
-        );
+        this.sendEmailInBackground(student.user.name, student.user.email, exam.subject, exam.date, exam.startTime, rooms.map(room => room.name));
 
         return this.examRepository.save(exam);
+    }
+
+
+    private async sendEmailInBackground(studentName: string, studentEmail: string, examSubject: string, examDate: any, examTime: string, examRooms: string[]): Promise<void> {
+        try {
+            await sendExamApprovalEmail(studentName, studentEmail, examSubject, examDate, examTime, examRooms);
+        } catch (error) {
+            console.error('Failed to send email:', error);
+        }
     }
 }
