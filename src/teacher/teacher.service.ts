@@ -11,6 +11,7 @@ import { Token } from '../auth/token.decorator';
 import { Role } from '../enums/user.enum';
 import { Student } from '../student/entity/student.entity'; 
 import { NotificationService } from '../notification/notification.service';
+import { sendExamApprovalEmail } from '../services/emailService';
 
 @Injectable()
 export class TeacherService {
@@ -130,7 +131,6 @@ export class TeacherService {
             room.status = RoomStatus.BOOKED;
             await this.roomRepository.save(room);
         }
-
         // Notificăm profesorul că examenul a fost confirmat
         console.log('Teacher user:', exam.teacher.user);
         await this.notificationService.createNotification(
@@ -161,6 +161,22 @@ export class TeacherService {
                 );
             }
         }
+
+        const student = exam.student;
+        if (!student || !student.user || !student.user.email) {
+            throw new NotFoundException(`Student or student's email not found for exam ID ${examId}`);
+        }
+
+        this.sendEmailInBackground(student.user.name, student.user.email, exam.subject, exam.date, exam.startTime, rooms.map(room => room.name));
         return this.examRepository.save(exam);
+    }
+
+
+    private async sendEmailInBackground(studentName: string, studentEmail: string, examSubject: string, examDate: any, examTime: string, examRooms: string[]): Promise<void> {
+        try {
+            await sendExamApprovalEmail(studentName, studentEmail, examSubject, examDate, examTime, examRooms);
+        } catch (error) {
+            console.error('Failed to send email:', error);
+        }
     }
 }
