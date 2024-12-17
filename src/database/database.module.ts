@@ -6,6 +6,7 @@ import { Student } from '../student/entity/student.entity';
 import { Teacher } from '../teacher/entity/teacher.entity';
 import { Exam } from '../exam/entity/exam.entity';
 import { Room } from '../room/entity/room.entity';
+import { Notification } from '../notification/entity/notification.entity';
 
 @Module({
     imports: [
@@ -20,7 +21,7 @@ import { Room } from '../room/entity/room.entity';
                 password: configService.get<string>('DATABASE_PASSWORD'),
                 database: configService.get<string>('DATABASE_NAME'),
                 synchronize: true,
-                entities: [User, Student, Teacher, Exam, Room],
+                entities: [User, Student, Teacher, Exam, Room, Notification],
                 // migrations: ["src/migrations/*.ts"],
             }),
         }),

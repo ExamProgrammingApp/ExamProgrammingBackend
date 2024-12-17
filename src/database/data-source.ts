@@ -4,6 +4,7 @@ import { Room } from '../room/entity/room.entity';
 import { Teacher } from '../teacher/entity/teacher.entity';
 import { Exam } from '../exam/entity/exam.entity';
 import { User } from '../user/entity/user.entity';
+import { Notification } from '../notification/entity/notification.entity';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -17,5 +18,5 @@ export const AppDataSource = new DataSource({
     password: configService.get<string>('DATABASE_PASSWORD'),
     database: configService.get<string>('DATABASE_NAME'),
     synchronize: true,
-    entities: [Room, Teacher, Exam, User],
+    entities: [Room, Teacher, Exam, User, Notification],
 });

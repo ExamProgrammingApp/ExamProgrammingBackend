@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, OneToMany, JoinColumn } from 'typeorm';
+import { Notification } from '../../notification/entity/notification.entity';
 import { Role } from '../../enums/user.enum';
 import { Teacher } from '../../teacher/entity/teacher.entity';
 import { Student } from '../../student/entity/student.entity';
@@ -29,4 +30,7 @@ export class User {
 
     @OneToOne(() => Student, (student) => student.user)
     student!: Student;
+
+    @OneToMany(() => Notification, (notification) => notification.user)
+    notifications!: Notification[];
 }
