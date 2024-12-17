@@ -9,6 +9,7 @@ import { Room } from '../room/entity/room.entity';
 import { RoomStatus } from '../enums/room.enum';
 import { Token } from '../auth/token.decorator';
 import { Role } from '../enums/user.enum';
+import { sendExamApprovalEmail } from '../services/emailService';
 
 @Injectable()
 export class TeacherService {
@@ -81,7 +82,7 @@ export class TeacherService {
         }
         const exam = await this.examRepository.findOne({
             where: { examId },
-            relations: ['teacher', 'rooms'],
+            relations: ['teacher', 'rooms', 'student', 'student.user'],
         });
 
         if (!exam) {
@@ -117,6 +118,22 @@ export class TeacherService {
         }
 
 
+        const student = exam.student;
+        if (!student || !student.user || !student.user.email) {
+            throw new NotFoundException(`Student or student's email not found for exam ID ${examId}`);
+        }
+
+        this.sendEmailInBackground(student.user.name, student.user.email, exam.subject, exam.date, exam.startTime, rooms.map(room => room.name));
+
         return this.examRepository.save(exam);
+    }
+
+
+    private async sendEmailInBackground(studentName: string, studentEmail: string, examSubject: string, examDate: any, examTime: string, examRooms: string[]): Promise<void> {
+        try {
+            await sendExamApprovalEmail(studentName, studentEmail, examSubject, examDate, examTime, examRooms);
+        } catch (error) {
+            console.error('Failed to send email:', error);
+        }
     }
 }
