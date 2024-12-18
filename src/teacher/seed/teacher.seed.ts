@@ -3,6 +3,7 @@ import { Teacher } from '../entity/teacher.entity';
 import { User } from '../../user/entity/user.entity';
 import { Category } from '../../enums/teacher.enum';
 
+
 export const seedTeachers = async (dataSource: DataSource) => {
     const teacherRepository = dataSource.getRepository(Teacher);
     const userRepository = dataSource.getRepository(User);
@@ -15,6 +16,7 @@ export const seedTeachers = async (dataSource: DataSource) => {
         { baseName: 'Serban Andries', subject: 'Chemistry', category: Category.MEDICINA },
     ];
 
+    
     for (const { baseName, subject, category } of names) {
         for (let i = 1; i <= 30; i++) {
             const email = `${baseName.toLowerCase().replace(/ /g, '.')}.teacher${i}@example.com`;
@@ -46,5 +48,22 @@ export const seedTeachers = async (dataSource: DataSource) => {
         }
     }
 
+    const emailVasile = await userRepository.findOneBy({ email: 'vasile.bordei@student.usv.ro' });
+
+if (emailVasile) {
+    const teacherVasile = teacherRepository.create({
+        name: 'Vasile Bordei',
+        subject: 'Computer Science',
+        category: Category.FIESC,
+        user: emailVasile,
+    });
+
+    await teacherRepository.save(teacherVasile);
+} else {
+    console.log('User with email vasile.bordei@student.usv.ro not found.');
+}
+    
+
+    
     console.log('Teachers seeded successfully.');
 };
