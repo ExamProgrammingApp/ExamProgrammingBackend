@@ -18,7 +18,6 @@ export class NotificationController {
         type: [Notification],
     })
     async getNotifications(@Token() token: any): Promise<Notification[]> {
-        console.log('getNotifications called', token);
         if (!token || !token.id) {
             throw new UnauthorizedException('You must be logged in to view notifications.');
         }
