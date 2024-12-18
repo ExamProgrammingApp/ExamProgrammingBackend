@@ -19,9 +19,5 @@ export const AppDataSource = new DataSource({
     password: configService.get<string>('DATABASE_PASSWORD'),
     database: configService.get<string>('DATABASE_NAME'),
     synchronize: true,
-<<<<<<< HEAD
-    entities: [Room, Teacher, Exam, User, Notification],
-=======
-    entities: [Room, Student, Teacher, Exam, User],
->>>>>>> main
+    entities: [Room, Student, Teacher, Exam, User, Notification],
 });
