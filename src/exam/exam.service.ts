@@ -55,19 +55,19 @@ export class ExamService {
 
         const examDate = dayjs(createExamDto.date).startOf("day");
 
-    // Verificăm dacă există un examen programat cu o zi înainte sau după examenul propus
-    const previousDay = examDate.subtract(1, "day").toDate();
-    const nextDay = examDate.add(1, "day").toDate();
+        // Verificăm dacă există un examen programat cu o zi înainte sau după examenul propus
+        const previousDay = examDate.subtract(1, "day").toDate();
+        const nextDay = examDate.add(1, "day").toDate();
 
-    const recentExam = await this.examRepository.findOne({
-        where: {
-            student: { studentId: student?.studentId },
-            date: Between(previousDay, nextDay),
-        },
-    });
+        const recentExam = await this.examRepository.findOne({
+            where: {
+                student: { studentId: student?.studentId },
+                date: Between(previousDay, nextDay),
+            },
+        });
 
-    if (recentExam) {
-        // Verificăm fiecare examen pentru a determina scenariul și a construi mesajul
+        if (recentExam) {
+            // Verificăm fiecare examen pentru a determina scenariul și a construi mesajul
 
             const existingDate = dayjs(recentExam.date).startOf("day");
             const formattedDate = existingDate.format("YYYY-MM-DD");
@@ -78,9 +78,9 @@ export class ExamService {
                 throw new BadRequestException(`You cannot schedule an exam the day after an existing exam on ${formattedDate}.`);
             } else if (existingDate.isSame(examDate.add(1, "day"))) {
                 throw new BadRequestException(`You cannot schedule an exam the day before an existing exam on ${formattedDate}.`);
-            
+
+            }
         }
-    }
         const exam = this.examRepository.create({ ...createExamDto, status: Status.PENDING, teacher, student });
 
         const teacherUser = teacher.user;
@@ -277,7 +277,7 @@ export class ExamService {
         if (exam.student) {
             if (exam.student.user) {
                 await this.notificationService.createNotification(
-                    exam.student.user, 
+                    exam.student.user,
                     'Your exam request was rejected. Modify the request',
                     Status.REJECTED,
                 );
@@ -335,7 +335,7 @@ export class ExamService {
         exam.status = Status.PENDING
 
         const teacher = await this.teacherRepository.findOne({
-            where: { user: exam.teacher.user},
+            where: { user: exam.teacher.user },
             relations: ['user'],
         });
         if (!teacher) {
@@ -369,14 +369,14 @@ export class ExamService {
         exams = await this.examRepository.find({
             where: {
                 teacher: { teacherId: teacher.teacherId },
-                status: Status.PENDING, // Căutăm examenele asociate teacherId
+                status: Status.PENDING,
             },
             relations: ['teacher'],
         });
 
-        if (exams.length === 0) {
-            throw new NotFoundException('Nu au fost găsite examene aprobate pentru acest profesor');
-        }
+        // if (exams.length === 0) {
+        //     throw new NotFoundException('Nu au fost găsite examene aprobate pentru acest profesor');
+        // }
 
         return exams;
     }
