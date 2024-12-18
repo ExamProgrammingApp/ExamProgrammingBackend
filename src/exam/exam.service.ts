@@ -10,6 +10,7 @@ import { Token } from '../auth/token.decorator';
 import { Role } from '../enums/user.enum';
 import { Student } from '../student/entity/student.entity';
 import { UpdateExamDto } from './dto/update-exam.dto';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class ExamService {
@@ -22,6 +23,8 @@ export class ExamService {
 
         @InjectRepository(Student)
         private studentRepository: Repository<Student>,
+
+        private notificationService: NotificationService,
     ) { }
 
 
@@ -39,6 +42,7 @@ export class ExamService {
 
         const teacher = await this.teacherRepository.findOne({
             where: { teacherId: createExamDto.teacherId },
+            relations: ['user'],
         });
 
         if (!teacher) {
@@ -51,6 +55,15 @@ export class ExamService {
 
         const exam = this.examRepository.create({ ...createExamDto, status: Status.PENDING, teacher, student });
         console.log('Exam data before saving:', exam);
+
+        const teacherUser = teacher.user;
+
+        if (teacherUser) {
+            // Trimitem notificarea către profesor
+            await this.notificationService.createNotification(teacherUser, 'New exam to review', Status.PENDING);
+        } else {
+            console.error('Teacher does not have a valid user associated with them');
+        }
 
         return await this.examRepository.save(exam);
     }
@@ -217,7 +230,7 @@ export class ExamService {
         // Căutăm examenul în baza de date pe baza examId
         const exam = await this.examRepository.findOne({
             where: { examId },
-            relations: ['teacher'], // Aici presupunem că examenul are o relație cu un profesor
+            relations: ['teacher', 'student', 'student.user'], // Aici presupunem că examenul are o relație cu un profesor
         });
 
         if (!exam) {
@@ -234,6 +247,22 @@ export class ExamService {
         }
 
         exam.status = Status.REJECTED;
+
+        if (exam.student) {
+            if (exam.student.user) {
+                await this.notificationService.createNotification(
+                    exam.student.user, 
+                    'Your exam request was rejected. Modify the request',
+                    Status.REJECTED,
+                );
+            } else {
+                console.log('Student found, but no user associated with the student');
+                throw new Error('Student exists, but no user found for the exam');
+            }
+        } else {
+            console.log('No student found for this exam');
+            throw new Error('No student found for this exam');
+        }
 
         await this.examRepository.save(exam);
         return { message: 'Exam rejected successfully' };
@@ -255,7 +284,7 @@ export class ExamService {
     ): Promise<Exam> {
         const exam = await this.examRepository.findOne({
             where: { examId },
-            relations: ['student'],
+            relations: ['student', 'teacher'],
         });
 
         if (!exam) {
@@ -280,6 +309,22 @@ export class ExamService {
         }
 
         exam.status = Status.PENDING
+
+        const teacher = await this.teacherRepository.findOne({
+            where: { user: exam.teacher.user},
+            relations: ['user'],
+        });
+        if (!teacher) {
+            throw new UnauthorizedException('Profesorul nu a fst gasit');
+        }
+        const teacherUser = teacher.user;
+
+        if (teacherUser) {
+            // Trimitem notificarea către profesor
+            await this.notificationService.createNotification(teacherUser, 'New exam to review', Status.PENDING);
+        } else {
+            console.error('Teacher does not have a valid user associated with them');
+        }
 
         return await this.examRepository.save(exam);
     }

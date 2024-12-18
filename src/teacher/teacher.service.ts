@@ -9,6 +9,8 @@ import { Room } from '../room/entity/room.entity';
 import { RoomStatus } from '../enums/room.enum';
 import { Token } from '../auth/token.decorator';
 import { Role } from '../enums/user.enum';
+import { Student } from '../student/entity/student.entity'; 
+import { NotificationService } from '../notification/notification.service';
 import { sendExamApprovalEmail } from '../services/emailService';
 
 @Injectable()
@@ -22,6 +24,11 @@ export class TeacherService {
 
         @InjectRepository(Room)
         private roomRepository: Repository<Room>,
+
+        @InjectRepository(Student) 
+        private studentRepository: Repository<Student>,
+
+        private notificationService: NotificationService, 
     ) { }
 
     async findAll(): Promise<Teacher[]> {
@@ -82,11 +89,19 @@ export class TeacherService {
         }
         const exam = await this.examRepository.findOne({
             where: { examId },
-            relations: ['teacher', 'rooms', 'student', 'student.user'],
+            relations: ['teacher', 'teacher.user', 'student', 'student.user', 'rooms'],
         });
 
         if (!exam) {
             throw new NotFoundException(`Exam with ID ${examId} not found`);
+        }
+    
+        if (!exam.teacher || !exam.teacher.user) {
+            throw new NotFoundException('Teacher or associated user not found for the exam.');
+        }
+    
+        if (!exam.student || !exam.student.user) {
+            throw new NotFoundException('Student or associated user not found for the exam.');
         }
 
 
@@ -116,7 +131,36 @@ export class TeacherService {
             room.status = RoomStatus.BOOKED;
             await this.roomRepository.save(room);
         }
-
+        // Notificăm profesorul că examenul a fost confirmat
+        console.log('Teacher user:', exam.teacher.user);
+        await this.notificationService.createNotification(
+            exam.teacher.user,
+            `The ${exam.subject} exam has been scheduled. Room(s) assigned.`,
+            Status.APPROVED
+        );
+    
+        console.log('Student user:', exam.student.user);
+        await this.notificationService.createNotification(
+            exam.student.user,
+            `Your ${exam.subject} exam has been confirmed and scheduled in the assigned room(s).`,
+            Status.APPROVED
+        );
+    
+        const studentsInGroup = await this.studentRepository.find({
+            where: { group: exam.student.group },
+            relations: ['user'],
+        });
+    
+        console.log('Students in group:', studentsInGroup);
+        for (const student of studentsInGroup) {
+            if (student.studentId !== exam.student.studentId) {
+                await this.notificationService.createNotification(
+                    student.user,
+                    `The ${exam.subject} exam for your group has been scheduled. Room(s) assigned.`,
+                    Status.APPROVED
+                );
+            }
+        }
 
         const student = exam.student;
         if (!student || !student.user || !student.user.email) {
@@ -124,7 +168,6 @@ export class TeacherService {
         }
 
         this.sendEmailInBackground(student.user.name, student.user.email, exam.subject, exam.date, exam.startTime, rooms.map(room => room.name));
-
         return this.examRepository.save(exam);
     }
 
