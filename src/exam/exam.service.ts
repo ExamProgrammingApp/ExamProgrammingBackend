@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Raw, Repository } from 'typeorm';
+import dayjs from 'dayjs';
+import { Between, Raw, Repository } from 'typeorm';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { Exam } from './entity/exam.entity';
 import { Teacher } from '../teacher/entity/teacher.entity';
@@ -29,7 +30,6 @@ export class ExamService {
 
 
     async create(createExamDto: CreateExamDto, @Token() token: any): Promise<Exam> {
-        console.log('Token:', token);
         if (token.role !== Role.HEADSTUDENT) {
             console.error('Unauthorized: Only students can create exams');
             throw new UnauthorizedException('Only students can create exams');
@@ -53,8 +53,35 @@ export class ExamService {
             throw new Error(`Student not found`);
         }
 
+        const examDate = dayjs(createExamDto.date).startOf("day");
+
+    // Verificăm dacă există un examen programat cu o zi înainte sau după examenul propus
+    const previousDay = examDate.subtract(1, "day").toDate();
+    const nextDay = examDate.add(1, "day").toDate();
+
+    const recentExam = await this.examRepository.findOne({
+        where: {
+            student: { studentId: student?.studentId },
+            date: Between(previousDay, nextDay),
+        },
+    });
+
+    if (recentExam) {
+        // Verificăm fiecare examen pentru a determina scenariul și a construi mesajul
+
+            const existingDate = dayjs(recentExam.date).startOf("day");
+            const formattedDate = existingDate.format("YYYY-MM-DD");
+
+            if (existingDate.isSame(examDate)) {
+                throw new BadRequestException(`You cannot schedule another exam on the same day as an existing exam on ${formattedDate}.`);
+            } else if (existingDate.isSame(examDate.subtract(1, "day"))) {
+                throw new BadRequestException(`You cannot schedule an exam the day after an existing exam on ${formattedDate}.`);
+            } else if (existingDate.isSame(examDate.add(1, "day"))) {
+                throw new BadRequestException(`You cannot schedule an exam the day before an existing exam on ${formattedDate}.`);
+            
+        }
+    }
         const exam = this.examRepository.create({ ...createExamDto, status: Status.PENDING, teacher, student });
-        console.log('Exam data before saving:', exam);
 
         const teacherUser = teacher.user;
 
@@ -176,7 +203,6 @@ export class ExamService {
                 },
                 relations: ['teacher', 'rooms'],
             });
-            console.log('Exam details with teacher relation:', exams);
         } else if (role === 'student' || role === 'headstudent') {
             const student = await this.studentRepository.findOne({
                 where: { user: { userId } },
@@ -256,11 +282,9 @@ export class ExamService {
                     Status.REJECTED,
                 );
             } else {
-                console.log('Student found, but no user associated with the student');
                 throw new Error('Student exists, but no user found for the exam');
             }
         } else {
-            console.log('No student found for this exam');
             throw new Error('No student found for this exam');
         }
 
