@@ -117,5 +117,37 @@ export const seedUsers = async (dataSource: DataSource) => {
         }
     }
 
+    const teacherVasile = userRepository.create({
+        name: 'Vasile Bordei',
+        email: 'vasile.bordei@student.usv.ro',
+        password: await bcrypt.hash('test123', 10),
+        role: Role.TEACHER,
+    });
+    
+    const studentMonica = userRepository.create({
+        name: 'Monica Stefanuca',
+        email: 'monica.stefanuca1@student.usv.ro',
+        password: await bcrypt.hash('test123', 10),
+        role: Role.HEADSTUDENT,
+    });
+
+    const headstudentSerban = userRepository.create({
+        name: 'Serban Andries',
+        email: 'george.andries@student.usv.ro',
+        password: await bcrypt.hash('test123', 10),
+        role: Role.HEADSTUDENT,
+    });
+
+    const headstudentRobert = userRepository.create({
+        name: 'Robert Pamparau',
+        email: 'robert.pamparau@student.usv.ro',
+        password: await bcrypt.hash('test123', 10),
+        role: Role.HEADSTUDENT,
+    });
+    await userRepository.save(teacherVasile);
+    await userRepository.save(studentMonica);
+    await userRepository.save(headstudentSerban);
+    await userRepository.save(headstudentRobert);
+
     console.log('Users seeded successfully.');
 };

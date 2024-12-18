@@ -58,6 +58,50 @@ export const seedStudents = async (dataSource: DataSource) => {
             console.log(`Student for email ${details.email} already exists.`);
         }
     }
+    const userMonica = await userRepository.findOneBy({ email: 'monica.stefanuca1@student.usv.ro' });
+    if (userMonica) {
+        const studentMonica = studentRepository.create({
+            name: 'Monica Stefanuca',
+            group: 'CS-A1',
+            year: 4,
+            CNP: (cnpCounter++).toString(),
+            user: userMonica,
+        });
+    
+        await studentRepository.save(studentMonica);
+    } else {
+        console.log('User not found');
+    }
+
+    const userRobert = await userRepository.findOneBy({ email: 'robert.pamparau@student.usv.ro' });
+    if (userRobert) {
+        const studentRobert = studentRepository.create({
+            name: 'Robert Pamparau',
+            group: 'CS-A1',
+            year: 4,
+            CNP: (cnpCounter++).toString(),
+            user: userRobert,
+        });
+    
+        await studentRepository.save(studentRobert);
+    } else {
+        console.log('User not found');
+    }
+
+    const userSerban = await userRepository.findOneBy({ email: 'george.andries@student.usv.ro' });
+    if (userSerban) {
+        const studentSerban = studentRepository.create({
+            name: 'Serban Andries',
+            group: 'CS-A1',
+            year: 4,
+            CNP: (cnpCounter++).toString(),
+            user: userSerban,
+        });
+    
+        await studentRepository.save(studentSerban);
+    } else {
+        console.log('User not found');
+    }
 
     console.log('Student and head student seeding completed.');
 };
